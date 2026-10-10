@@ -91,6 +91,27 @@
         text-align: right;
       }
 
+      /* --- 通知設定 --- */
+      #notifyRow {
+        margin-bottom: 16px;
+        text-align: left;
+        font-size: 13px;
+        color: #666;
+      }
+      #notifyRow label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+      }
+      #notifyMsg {
+        display: block;
+        font-size: 11px;
+        color: #c5221f;
+        margin-top: 4px;
+        min-height: 1.4em;
+      }
+
       /* タイマーの数字部分 */
       #display { font-size: 32px; font-weight: bold; margin: 12px 0 20px; color: #333; border: 2px solid #90caf9; border-radius: 10px; padding: 20px; background: white; }
 
@@ -250,6 +271,14 @@
         <span id="volumeValue">50%</span>
       </div>
 
+      <div id="notifyRow">
+        <label>
+          <input type="checkbox" id="notifyToggle" onchange="onNotifyToggle()">
+          🔔 他のタブ表示中も通知でお知らせ
+        </label>
+        <span id="notifyMsg"></span>
+      </div>
+
       <div id="displayWrap">
         <div id="cycleCount">準備完了</div>
         <div id="numberBox">
@@ -276,6 +305,8 @@
   let audioCtx = null;     // Web Audio API（音を鳴らす仕組み）の管理
   let currentCycle = 1;    // 現在何セット目か
   const MAX_CYCLES = 100;   // 最大何セットまで繰り返すか
+  let currentPhaseLabel = ''; // タブタイトルに出すフェーズ表示（作業中/休憩中）
+  const originalTitle = document.title; // タイマー停止時に戻すための元のタイトル
 
   // 一時停止から再開するために現在の残り時間と処理を保存する変数
   let remainingSeconds = 0;
@@ -284,6 +315,7 @@
   const STORAGE_KEY_WORK = 'pomodoroWorkMin';
   const STORAGE_KEY_BREAK = 'pomodoroBreakMin';
   const STORAGE_KEY_VOLUME = 'pomodoroVolume';
+  const STORAGE_KEY_NOTIFY = 'pomodoroNotifyEnabled';
   const MAX_GAIN = 0.3; // スライダー100%時の最大音量（元の固定値0.15はスライダー50%相当）
 
   // ページを開いた時に前回の設定値を復元（スプレッドシートB2/C2の代わり）
@@ -297,6 +329,17 @@
       if (savedVolume !== null) document.getElementById('volumeSlider').value = savedVolume;
     } catch (e) { /* localStorageが使えない環境でも動作は継続 */ }
     document.getElementById('volumeValue').innerText = document.getElementById('volumeSlider').value + '%';
+
+    // 通知設定の復元（ブラウザ側で許可が取り消されている場合はOFFのまま表示）
+    const notifyRow = document.getElementById('notifyRow');
+    const notifyCheckbox = document.getElementById('notifyToggle');
+    if (!('Notification' in window)) {
+      notifyRow.style.display = 'none'; // 非対応環境では項目自体を隠す
+    } else {
+      let savedNotify = '0';
+      try { savedNotify = localStorage.getItem(STORAGE_KEY_NOTIFY) || '0'; } catch (e) { /* 既定値のまま継続 */ }
+      notifyCheckbox.checked = (savedNotify === '1' && Notification.permission === 'granted');
+    }
   });
 
   /**
@@ -308,6 +351,50 @@
     try {
       localStorage.setItem(STORAGE_KEY_VOLUME, slider.value);
     } catch (e) { /* 保存できなくても動作は継続 */ }
+  }
+
+  /**
+   * 通知チェックボックスが操作された時の処理
+   * （ONにする時だけブラウザの通知許可を求める。ブロックされていたら自動でOFFに戻す）
+   */
+  function onNotifyToggle() {
+    const checkbox = document.getElementById('notifyToggle');
+    const msgEl = document.getElementById('notifyMsg');
+    msgEl.innerText = '';
+
+    if (!checkbox.checked) {
+      try { localStorage.setItem(STORAGE_KEY_NOTIFY, '0'); } catch (e) { /* 保存できなくても動作は継続 */ }
+      return;
+    }
+
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+        try { localStorage.setItem(STORAGE_KEY_NOTIFY, '1'); } catch (e) { /* 保存できなくても動作は継続 */ }
+      } else {
+        checkbox.checked = false;
+        try { localStorage.setItem(STORAGE_KEY_NOTIFY, '0'); } catch (e) { /* 保存できなくても動作は継続 */ }
+        msgEl.innerText = '通知がブロックされています。ブラウザの設定から許可してください。';
+      }
+    });
+  }
+
+  /**
+   * フェーズ切り替え（作業→休憩／休憩→作業）を通知する。
+   * 他のタブを見ている間（document.hidden）だけ出す。画面を見ている間は
+   * 音とタブタイトルで十分気づけるため、通知を重ねて邪魔にしない。
+   */
+  function notifyPhaseChange(title, body) {
+    if (!('Notification' in window)) return;
+    if (Notification.permission !== 'granted') return;
+    if (!document.hidden) return;
+
+    let notifyEnabled = '0';
+    try { notifyEnabled = localStorage.getItem(STORAGE_KEY_NOTIFY) || '0'; } catch (e) { /* 既定値のまま継続 */ }
+    if (notifyEnabled !== '1') return;
+
+    try {
+      new Notification(title, { body: body, tag: 'countdown-timer-phase' });
+    } catch (e) { /* 通知生成に失敗しても動作は継続 */ }
   }
 
   /**
@@ -454,16 +541,20 @@
       cycleEl.innerText = 'サイクル: ' + currentCycle + ' / ' + MAX_CYCLES;
 
       // --- ステップ1: 集中時間の計測 ---
+      currentPhaseLabel = '🔴作業中';
       statusEl.innerText = '【計測中...】';
       runSequence(workMin * 60, () => {
         if (!isRunning) return;
         playBeep(3);
+        notifyPhaseChange('休憩時間です', '作業おつかれさまでした。少し休憩しましょう。');
 
         // --- ステップ2: 休憩時間の計測 ---
+        currentPhaseLabel = '🟢休憩中';
         statusEl.innerText = '【インターバル】';
         runSequence(breakMin * 60, () => {
           if (!isRunning) return;
           playBeep(3);
+          notifyPhaseChange('作業再開の時間です', '休憩終了です。次のサイクルを始めましょう。');
           currentCycle++;
           loop();
         });
@@ -698,8 +789,13 @@
   function updateDisplay(seconds) {
     let m = Math.floor(seconds / 60);
     let s = seconds % 60;
-    document.getElementById('display').innerText =
-      ("0" + m).slice(-2) + ":" + ("0" + s).slice(-2);
+    const text = ("0" + m).slice(-2) + ":" + ("0" + s).slice(-2);
+    document.getElementById('display').innerText = text;
+
+    // タブを見ていなくても残り時間が分かるようにタイトルにも反映
+    if (isRunning) {
+      document.title = text + ' ' + currentPhaseLabel + ' - ' + originalTitle;
+    }
   }
 
   /**
@@ -726,6 +822,9 @@
     document.getElementById('display').innerText = '00:00';
     document.getElementById('status').innerText = 'リセットしました';
     document.getElementById('cycleCount').innerText = '停止中';
+
+    currentPhaseLabel = '';
+    document.title = originalTitle;
   }
 </script>
   </body>
