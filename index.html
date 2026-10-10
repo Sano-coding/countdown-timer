@@ -4,11 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>カウントダウンタイマー</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+      :root {
+        color-scheme: dark;
+        /* --- カラートークン --- */
+        --bg: #121a24;          /* ベース背景（紺） */
+        --surface: #1a2531;     /* カード・入力欄の面 */
+        --surface-border: #2c3b4a; /* ヘアラインの境界線 */
+        --ink: #eaf1f6;         /* 主要テキスト */
+        --ink-dim: #7e93a3;     /* ラベル・補助テキスト */
+        --work: #e3922f;        /* 作業フェーズのアクセント（amber） */
+        --rest: #45b5a6;        /* 休憩フェーズのアクセント（teal） */
+        --danger: #c14b3d;      /* 停止・リセット */
+
+        /* --- タイポグラフィトークン --- */
+        --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+      }
+
       * { box-sizing: border-box; }
       body {
-        font-family: sans-serif;
-        background: linear-gradient(135deg, #bfe0ff 0%, #e6f4ff 100%);
+        font-family: var(--font-sans);
+        background: var(--bg);
         margin: 0;
         min-height: 100vh;
         display: flex;
@@ -18,19 +38,22 @@
       }
 
       #card {
-        background: #f7fbff;
-        border: 2px solid #90caf9;
-        border-radius: 14px;
+        background: var(--surface);
+        border: 1px solid var(--surface-border);
+        border-radius: 16px;
         padding: 24px;
         width: 100%;
         max-width: 320px;
-        box-shadow: 0 6px 20px rgba(66, 133, 244, 0.25);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
         text-align: center;
       }
 
       h1 {
-        font-size: 16px;
-        color: #1a5276;
+        font-family: var(--font-sans);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        color: var(--ink-dim);
         margin: 0 0 16px;
       }
 
@@ -47,24 +70,26 @@
       .settingBox label {
         display: block;
         font-size: 11px;
-        color: #666;
+        color: var(--ink-dim);
         margin-bottom: 4px;
       }
       .settingBox input {
         width: 100%;
         padding: 10px 6px;
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
         font-size: 24px;
-        font-weight: bold;
-        color: #1a3d5c;
-        border: 2px solid #90caf9;
-        border-radius: 6px;
+        font-weight: 600;
+        color: var(--ink);
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
         text-align: center;
-        background: white;
+        background: var(--bg);
       }
       .settingBox input:disabled {
-        background-color: #e8eef2;
-        color: #9aa9b3;
-        border-color: #c3d9e8;
+        background-color: var(--surface);
+        color: var(--ink-dim);
+        border-color: var(--surface-border);
       }
 
       /* --- 音量調節 --- */
@@ -77,16 +102,18 @@
       }
       #volumeRow label {
         font-size: 13px;
-        color: #666;
+        color: var(--ink-dim);
         white-space: nowrap;
       }
       #volumeSlider {
         flex: 1;
-        accent-color: #4285f4;
+        accent-color: var(--work);
       }
       #volumeValue {
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
         font-size: 12px;
-        color: #666;
+        color: var(--ink-dim);
         width: 32px;
         text-align: right;
       }
@@ -96,7 +123,7 @@
         margin-bottom: 16px;
         text-align: left;
         font-size: 13px;
-        color: #666;
+        color: var(--ink-dim);
       }
       #notifyRow label {
         display: flex;
@@ -104,16 +131,39 @@
         gap: 6px;
         cursor: pointer;
       }
+      #notifyRow input[type="checkbox"] {
+        accent-color: var(--work);
+      }
       #notifyMsg {
         display: block;
         font-size: 11px;
-        color: #c5221f;
+        color: var(--danger);
         margin-top: 4px;
         min-height: 1.4em;
       }
 
       /* タイマーの数字部分 */
-      #display { font-size: 32px; font-weight: bold; margin: 12px 0 20px; color: #333; border: 2px solid #90caf9; border-radius: 10px; padding: 20px; background: white; }
+      #display {
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+        font-size: clamp(44px, 13vw, 68px);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        margin: 12px 0 20px;
+        color: var(--ink);
+        border: 1px solid var(--surface-border);
+        border-radius: 10px;
+        padding: 20px;
+        background: var(--bg);
+        transition: border-color 0.3s ease;
+      }
+
+      /* フェーズに応じて数字表示の縁取りとサイクルバッジの色が切り替わる
+         （作業＝amber／休憩＝teal。文字を読まなくても一目で今の状態がわかる） */
+      #displayWrap.phase-work #display { border-color: var(--work); }
+      #displayWrap.phase-rest #display { border-color: var(--rest); }
+      #displayWrap.phase-work #cycleCount { background-color: var(--work); color: var(--bg); }
+      #displayWrap.phase-rest #cycleCount { background-color: var(--rest); color: var(--bg); }
 
       /* 数字表示＋全画面ボタンをまとめる枠 */
       #displayWrap { position: relative; }
@@ -135,13 +185,13 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(255, 255, 255, 0.75);
-        color: #1a5276;
-        border: 1px solid #90caf9;
-        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--ink-dim);
+        border: 1px solid var(--surface-border);
+        border-radius: 8px;
       }
       /* アイコンの出し分けはJS側でstyle.displayを直接制御する（SVGのhidden属性は環境により反映が不安定なため使わない） */
-      #fullscreenBtn:active { background: rgba(255, 255, 255, 0.95); }
+      #fullscreenBtn:active { background: rgba(255, 255, 255, 0.16); }
 
       /* --- 全画面表示中のスタイル（YouTube風にカウントダウン部分だけを画面いっぱいに） ---
          ブラウザ標準のFullscreen APIはiPhone(WebKit)では動作しないことがあるため、
@@ -160,7 +210,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #0d1b2a;
+        background: var(--bg);
         margin: 0;
         z-index: 999999;
       }
@@ -168,7 +218,7 @@
         font-size: 20vw;
         border: none;
         background: transparent;
-        color: #eaf4ff;
+        color: var(--ink);
         margin: 0;
         padding: 0;
       }
@@ -176,7 +226,7 @@
         top: 24px;
         right: 24px;
         background: rgba(255, 255, 255, 0.15);
-        color: #eaf4ff;
+        color: var(--ink);
         border-color: rgba(255, 255, 255, 0.4);
       }
 
@@ -210,43 +260,63 @@
         pointer-events: auto;
       }
       #displayWrap.fsActive #status {
-        color: #ff8a80;
+        color: var(--danger);
       }
 
       /* ボタン全般のスタイル */
-      button { padding: 12px; font-size: 16px; cursor: pointer; width: 100%; border-radius: 5px; border: none; color: white; font-weight: bold; margin-bottom: 5px; }
+      button {
+        padding: 12px;
+        font-family: var(--font-sans);
+        font-size: 15px;
+        cursor: pointer;
+        width: 100%;
+        border-radius: 8px;
+        border: none;
+        color: var(--ink);
+        font-weight: 600;
+        margin-bottom: 5px;
+      }
 
-      /* 開始・再開系（青） */
-      .btn-blue { background-color: #4285f4; }
-      .btn-blue:active { background-color: #357ae8; }
+      /* 開始・再開系（作業フェーズと同じamber。濃色背景なので文字は暗色で） */
+      .btn-blue { background-color: var(--work); color: var(--bg); }
+      .btn-blue:active { background-color: #c77d24; }
 
-      /* 停止・リセット系（赤） */
-      .btn-red { background-color: #ea4335; }
-      .btn-red:active { background-color: #c5221f; }
+      /* 停止・リセット系 */
+      .btn-red { background-color: var(--danger); }
+      .btn-red:active { background-color: #a53e32; }
 
-      /* 一時停止系（黄） */
-      .btn-yellow { background-color: #fbbc05; color: #333; }
-      .btn-yellow:active { background-color: #e0a800; }
+      /* 一時停止系（控えめなニュートラル） */
+      .btn-yellow { background-color: var(--surface-border); color: var(--ink); }
+      .btn-yellow:active { background-color: #3a4b5c; }
 
       /* 一時停止ボタン専用（最初は非表示） */
       #pauseBtn { display: none; }
 
-      /* 音テストボタン（少し小さく目立たない色に） */
-      #testBtn { background-color: #6c757d; font-size: 11px; padding: 5px; opacity: 0.8; }
+      /* 音テストボタン（枠線だけの控えめなゴーストボタン） */
+      #testBtn {
+        background-color: transparent;
+        border: 1px solid var(--surface-border);
+        color: var(--ink-dim);
+        font-size: 11px;
+        padding: 5px;
+      }
 
       /* 状態表示テキスト（計測中・インターバルなど） */
-      #status { color: #d32f2f; margin-top: 15px; font-size: 13px; min-height: 1.5em; font-weight: bold; }
+      #status { color: var(--ink-dim); margin-top: 15px; font-size: 13px; min-height: 1.5em; font-weight: 600; }
 
-      /* サイクル数表示（バッジ風に大きく強調） */
+      /* サイクル数表示 */
       #cycleCount {
         display: inline-block;
-        font-size: 18px;
-        font-weight: bold;
-        color: white;
-        background-color: #4285f4;
-        border-radius: 20px;
-        padding: 6px 16px;
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+        background-color: var(--surface-border);
+        border-radius: 8px;
+        padding: 6px 14px;
         margin-bottom: 10px;
+        transition: background-color 0.3s ease;
       }
     </style>
   </head>
@@ -526,6 +596,7 @@
     isRunning = true;
     isPaused = false;
     const mainBtn = document.getElementById('mainBtn');
+    const wrap = document.getElementById('displayWrap');
     mainBtn.innerText = '停止・リセット';
     mainBtn.classList.replace('btn-blue', 'btn-red');
     pauseBtn.style.display = 'block'; // 一時停止ボタンを表示
@@ -542,6 +613,8 @@
 
       // --- ステップ1: 集中時間の計測 ---
       currentPhaseLabel = '🔴作業中';
+      wrap.classList.add('phase-work');
+      wrap.classList.remove('phase-rest');
       statusEl.innerText = '【計測中...】';
       runSequence(workMin * 60, () => {
         if (!isRunning) return;
@@ -550,6 +623,8 @@
 
         // --- ステップ2: 休憩時間の計測 ---
         currentPhaseLabel = '🟢休憩中';
+        wrap.classList.add('phase-rest');
+        wrap.classList.remove('phase-work');
         statusEl.innerText = '【インターバル】';
         runSequence(breakMin * 60, () => {
           if (!isRunning) return;
@@ -824,6 +899,7 @@
     document.getElementById('cycleCount').innerText = '停止中';
 
     currentPhaseLabel = '';
+    document.getElementById('displayWrap').classList.remove('phase-work', 'phase-rest');
     document.title = originalTitle;
   }
 </script>
