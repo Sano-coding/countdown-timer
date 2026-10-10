@@ -3,14 +3,15 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>カウントダウンタイマー</title>
-    <meta name="description" content="作業と休憩をシンプルに切り替えられる無料のカウントダウンタイマー。インストール不要、ブラウザですぐ使えます。">
+    <title>カウントダウンタイマー | 無料のポモドーロ・作業用タイマー</title>
+    <meta name="description" content="作業と休憩を自動で繰り返す無料のカウントダウンタイマー。ポモドーロ・勉強・仕事の時間管理に。インストール不要、ログイン不要でブラウザからすぐ使えます。">
+    <link rel="canonical" href="https://cycletime.app/">
 
     <!-- OGP (Facebook / LINE など) -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://cycletime.app/">
     <meta property="og:title" content="カウントダウンタイマー">
-    <meta property="og:description" content="作業と休憩をシンプルに切り替えられる無料のカウントダウンタイマー。インストール不要、ブラウザですぐ使えます。">
+    <meta property="og:description" content="作業と休憩を自動で繰り返す無料のカウントダウンタイマー。ポモドーロ・勉強・仕事の時間管理に。インストール不要、ログイン不要でブラウザからすぐ使えます。">
     <meta property="og:image" content="https://cycletime.app/assets/og-image.png">
     <meta property="og:image:width" content="600">
     <meta property="og:image:height" content="315">
@@ -20,7 +21,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="カウントダウンタイマー">
-    <meta name="twitter:description" content="作業と休憩をシンプルに切り替えられる無料のカウントダウンタイマー。インストール不要、ブラウザですぐ使えます。">
+    <meta name="twitter:description" content="作業と休憩を自動で繰り返す無料のカウントダウンタイマー。ポモドーロ・勉強・仕事の時間管理に。インストール不要、ログイン不要でブラウザからすぐ使えます。">
     <meta name="twitter:image" content="https://cycletime.app/assets/og-image.png">
 
     <!-- PWA -->
@@ -68,6 +69,7 @@
         margin: 0;
         min-height: 100vh;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         padding: 20px;
@@ -379,11 +381,52 @@
         margin: 0;
         pointer-events: none;
       }
+
+      #about {
+        max-width: 320px;
+        margin: 16px auto 0;
+        padding: 0 8px;
+        text-align: center;
+      }
+      #about h2 {
+        font-family: var(--font-sans);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ink-dim);
+        margin: 0 0 6px;
+      }
+      #about p {
+        font-family: var(--font-sans);
+        font-size: 11px;
+        line-height: 1.6;
+        color: var(--ink-dim);
+        margin: 0;
+      }
     </style>
 
     <!-- Cloudflare Web Analytics -->
     <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2ee7e7d6774a4b35896494f8b0e193c3"}'></script>
     <!-- End Cloudflare Web Analytics -->
+
+    <!-- 構造化データ（Google向け） -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "カウントダウンタイマー",
+      "url": "https://cycletime.app/",
+      "description": "作業と休憩を自動で繰り返す無料のカウントダウンタイマー。ポモドーロ・勉強・仕事の時間管理に使える、インストール不要・ログイン不要のブラウザアプリ。",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires JavaScript",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "JPY"
+      },
+      "inLanguage": "ja"
+    }
+    </script>
   </head>
   <body>
     <div id="card">
@@ -440,6 +483,15 @@
         <span class="btnLabel">音テスト</span>
       </button>
     </div>
+
+    <section id="about">
+      <h2>無料のポモドーロ・カウントダウンタイマー</h2>
+      <p>
+        作業時間と休憩時間を設定するだけで、自動で繰り返してくれるシンプルなカウントダウンタイマーです。
+        ポモドーロ・テクニックでの勉強や仕事の時間管理に使えます。インストール不要・ログイン不要で、
+        ブラウザを開けばすぐに使えます。
+      </p>
+    </section>
 
 <script>
   /* --- 状態を管理する変数（グローバル変数） --- */
