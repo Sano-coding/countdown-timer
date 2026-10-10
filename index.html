@@ -6,30 +6,32 @@
     <title>カウントダウンタイマー</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Chivo+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
       :root {
         color-scheme: light;
-        /* --- カラートークン（継続トーン・光） --- */
-        --bg: #eaf0f6;          /* ベース背景（淡い青グレー） */
-        --surface: #f8fafc;     /* カード・入力欄の面 */
-        --surface-border: #d7e1ea; /* ヘアラインの境界線／一時停止ボタン */
-        --ink: #1e2a36;         /* 主要テキスト */
-        --ink-dim: #4a6072;     /* ラベル・補助テキスト */
-        --work: #e3922f;        /* 作業フェーズのアクセント（amber） */
-        --rest: #45b5a6;        /* 休憩フェーズのアクセント（teal） */
-        --danger: #c14b3d;      /* 停止・リセット */
+        /* --- カラートークン（紺×amberの「いかにもAI」な配色を避け、
+           ラズベリー×スプルースグリーンに変更） --- */
+        --bg: #f4f5f3;          /* ベース背景（ニュートラルな白寄りグレー） */
+        --surface: #ffffff;     /* カード・入力欄の面 */
+        --surface-border: #dfe1dc; /* ヘアラインの境界線／一時停止ボタン */
+        --ink: #22252a;         /* 主要テキスト（紺ではなく中性のチャコール） */
+        --ink-dim: #6b7068;     /* ラベル・補助テキスト */
+        --work: #c23b6b;        /* 作業フェーズのアクセント（ラズベリー） */
+        --rest: #2f7a5c;        /* 休憩フェーズのアクセント（スプルースグリーン） */
+        --danger: #a84343;      /* 停止・リセット（レンガ色、作業色と被らない赤） */
 
-        /* 明るい背景色のamber/teal/dangerボタンの上でも読めるよう固定した文字色
+        /* 明るい背景色のwork/rest/dangerボタンの上でも読めるよう固定した文字色
            （--ink/--bgはテーマで変わるため、アクセント色の上の文字には使わない） */
-        --on-accent-light: #1a2430; /* amber/teal背景の上の文字（常に暗色） */
-        --on-accent-dark: #fbf8f4;  /* danger背景の上の文字（常に明色） */
-        --control-overlay: rgba(15, 23, 31, 0.05);        /* 全画面ボタンの地色 */
-        --control-overlay-active: rgba(15, 23, 31, 0.1);
+        --on-accent-light: #211f22; /* work/rest背景の上の文字（常に暗色） */
+        --on-accent-dark: #faf7f2;  /* danger背景の上の文字（常に明色） */
+        --control-overlay: rgba(20, 22, 20, 0.05);        /* 全画面ボタンの地色 */
+        --control-overlay-active: rgba(20, 22, 20, 0.1);
 
-        /* --- タイポグラフィトークン --- */
-        --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+        /* --- タイポグラフィトークン ---
+           IBM Plexは生成ツールで多用されがちなので、Archivo + Chivo Monoに変更 */
+        --font-sans: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        --font-mono: 'Chivo Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
       }
 
       * { box-sizing: border-box; }
@@ -293,11 +295,11 @@
 
       /* 開始・再開系（作業フェーズと同じamber。濃色背景なので文字は暗色で） */
       .btn-blue { background-color: var(--work); color: var(--on-accent-light); }
-      .btn-blue:active { background-color: #c77d24; }
+      .btn-blue:active { background-color: #a62f58; }
 
       /* 停止・リセット系 */
       .btn-red { background-color: var(--danger); color: var(--on-accent-dark); }
-      .btn-red:active { background-color: #a53e32; }
+      .btn-red:active { background-color: #8a3636; }
 
       /* 一時停止系（控えめなニュートラル） */
       .btn-yellow { background-color: var(--surface-border); color: var(--ink); }
