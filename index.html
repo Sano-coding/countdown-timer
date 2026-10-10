@@ -23,6 +23,14 @@
     <meta name="twitter:description" content="作業と休憩をシンプルに切り替えられる無料のカウントダウンタイマー。インストール不要、ブラウザですぐ使えます。">
     <meta name="twitter:image" content="https://sano-coding.github.io/countdown-timer/assets/og-image.png">
 
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4285f4">
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="タイマー">
+
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='13' y='1' width='6' height='4' rx='2' fill='%231a3d5c'/%3E%3Ccircle cx='16' cy='18' r='13' fill='%23eaf6ff' stroke='%231a3d5c' stroke-width='2.5'/%3E%3Cpath d='M16 18 L16 6.5 A11.5 11.5 0 0 1 26.8 21.9 Z' fill='%234285f4'/%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -977,6 +985,14 @@
     currentPhaseLabel = '';
     document.getElementById('displayWrap').classList.remove('phase-work', 'phase-rest');
     document.title = originalTitle;
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch((err) => {
+        console.warn('Service worker registration failed:', err);
+      });
+    });
   }
 </script>
   </body>
