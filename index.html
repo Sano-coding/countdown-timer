@@ -263,8 +263,12 @@
         color: var(--danger);
       }
 
-      /* ボタン全般のスタイル */
+      /* ボタン全般のスタイル（アイコンはテキストの左側に配置） */
       button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
         padding: 12px;
         font-family: var(--font-sans);
         font-size: 15px;
@@ -276,6 +280,7 @@
         font-weight: 600;
         margin-bottom: 5px;
       }
+      button .icon { flex-shrink: 0; display: block; }
 
       /* 開始・再開系（作業フェーズと同じamber。濃色背景なので文字は暗色で） */
       .btn-blue { background-color: var(--work); color: var(--bg); }
@@ -317,6 +322,24 @@
         padding: 6px 14px;
         margin-bottom: 10px;
         transition: background-color 0.3s ease;
+      }
+
+      /* 計測中は設定項目をたたんで数字に意識が向くようにする
+         （display:noneだと変化が唐突なので、高さと透明度を滑らかに閉じる） */
+      #settings, #volumeRow, #notifyRow, #testBtn {
+        max-height: 100px;
+        opacity: 1;
+        overflow: hidden;
+        transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
+      }
+      #card.is-running #settings,
+      #card.is-running #volumeRow,
+      #card.is-running #notifyRow,
+      #card.is-running #testBtn {
+        max-height: 0;
+        opacity: 0;
+        margin: 0;
+        pointer-events: none;
       }
     </style>
   </head>
@@ -360,11 +383,20 @@
         </div>
         <div id="fsFooter">
           <div id="status"></div>
-          <button id="mainBtn" class="btn-blue" onclick="toggleTimer(event)">スタート</button>
-          <button id="pauseBtn" class="btn-yellow" onclick="togglePause(event)">一時停止</button>
+          <button id="mainBtn" class="btn-blue" onclick="toggleTimer(event)">
+            <svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <span class="btnLabel">スタート</span>
+          </button>
+          <button id="pauseBtn" class="btn-yellow" onclick="togglePause(event)">
+            <svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+            <span class="btnLabel">一時停止</span>
+          </button>
         </div>
       </div>
-      <button id="testBtn" onclick="playBeep(2)">音テスト</button>
+      <button id="testBtn" onclick="playBeep(2)">
+        <svg class="icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>
+        <span class="btnLabel">音テスト</span>
+      </button>
     </div>
 
 <script>
@@ -377,6 +409,18 @@
   const MAX_CYCLES = 100;   // 最大何セットまで繰り返すか
   let currentPhaseLabel = ''; // タブタイトルに出すフェーズ表示（作業中/休憩中）
   const originalTitle = document.title; // タイマー停止時に戻すための元のタイトル
+
+  // mainBtn/pauseBtnのアイコン（状態に応じて差し替える。テキストと一緒にまとめて切り替える）
+  const ICON_PLAY = '<svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  const ICON_STOP = '<svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+  const ICON_PAUSE = '<svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+
+  /**
+   * ボタンのアイコンとラベルをまとめて差し替える
+   */
+  function setBtnContent(btn, iconHtml, label) {
+    btn.innerHTML = iconHtml + '<span class="btnLabel">' + label + '</span>';
+  }
 
   // 一時停止から再開するために現在の残り時間と処理を保存する変数
   let remainingSeconds = 0;
@@ -555,13 +599,13 @@
       // 一時停止する処理
       clearInterval(timerId); // カウントダウンを止める
       isPaused = true;
-      pauseBtn.innerText = '再開';
+      setBtnContent(pauseBtn, ICON_PLAY, '再開');
       pauseBtn.classList.replace('btn-yellow', 'btn-blue');
       document.getElementById('status').innerText = '【一時停止中】';
     } else {
       // 再開する処理
       isPaused = false;
-      pauseBtn.innerText = '一時停止';
+      setBtnContent(pauseBtn, ICON_PAUSE, '一時停止');
       pauseBtn.classList.replace('btn-blue', 'btn-yellow');
       // 保存しておいた残り時間と後続処理でカウントダウンを再開
       runSequence(remainingSeconds, onCompleteCallback);
@@ -597,11 +641,12 @@
     isPaused = false;
     const mainBtn = document.getElementById('mainBtn');
     const wrap = document.getElementById('displayWrap');
-    mainBtn.innerText = '停止・リセット';
+    setBtnContent(mainBtn, ICON_STOP, '停止・リセット');
     mainBtn.classList.replace('btn-blue', 'btn-red');
-    pauseBtn.style.display = 'block'; // 一時停止ボタンを表示
+    pauseBtn.style.display = 'flex'; // 一時停止ボタンを表示
     workInput.disabled = true;  // 計測中は設定変更不可に
     breakInput.disabled = true;
+    document.getElementById('card').classList.add('is-running'); // 設定欄をたたんで数字に集中させる
 
     function loop() {
       if (!isRunning || currentCycle > MAX_CYCLES) {
@@ -883,16 +928,17 @@
 
     // ボタンの表示状態を戻す
     const mainBtn = document.getElementById('mainBtn');
-    mainBtn.innerText = 'スタート';
+    setBtnContent(mainBtn, ICON_PLAY, 'スタート');
     mainBtn.classList.replace('btn-red', 'btn-blue');
     const pauseBtn = document.getElementById('pauseBtn');
     pauseBtn.style.display = 'none';
-    pauseBtn.innerText = '一時停止';
+    setBtnContent(pauseBtn, ICON_PAUSE, '一時停止');
     pauseBtn.classList.remove('btn-blue');
     pauseBtn.classList.add('btn-yellow');
 
     document.getElementById('workMin').disabled = false;
     document.getElementById('breakMin').disabled = false;
+    document.getElementById('card').classList.remove('is-running'); // 設定欄を再表示
 
     document.getElementById('display').innerText = '00:00';
     document.getElementById('status').innerText = 'リセットしました';
