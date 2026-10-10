@@ -10,26 +10,25 @@
     <style>
       :root {
         color-scheme: light;
-        /* --- カラートークン（紺×amberの「いかにもAI」な配色を避け、
-           ラズベリー×スプルースグリーンに変更） --- */
-        --bg: #f4f5f3;          /* ベース背景（ニュートラルな白寄りグレー） */
-        --surface: #ffffff;     /* カード・入力欄の面 */
-        --surface-border: #dfe1dc; /* ヘアラインの境界線／一時停止ボタン */
-        --ink: #22252a;         /* 主要テキスト（紺ではなく中性のチャコール） */
-        --ink-dim: #6b7068;     /* ラベル・補助テキスト */
-        --work: #c23b6b;        /* 作業フェーズのアクセント（ラズベリー） */
-        --rest: #2f7a5c;        /* 休憩フェーズのアクセント（スプルースグリーン） */
-        --danger: #a84343;      /* 停止・リセット（レンガ色、作業色と被らない赤） */
+        /* --- カラートークン（元の水色＋赤/黄色の配色に戻した） --- */
+        --bg: #eaf6ff;           /* ベース背景（水色系） */
+        --surface: #f7fbff;      /* カード・入力欄の面 */
+        --surface-border: #90caf9; /* ヘアラインの境界線 */
+        --ink: #1a3d5c;          /* 主要テキスト */
+        --ink-dim: #5b7893;      /* ラベル・補助テキスト */
+        --work: #4285f4;         /* 作業フェーズのアクセント（青） */
+        --rest: #fbbc05;         /* 休憩フェーズのアクセント（黄） */
+        --danger: #ea4335;       /* 停止・リセット（赤） */
 
-        /* 明るい背景色のwork/rest/dangerボタンの上でも読めるよう固定した文字色
-           （--ink/--bgはテーマで変わるため、アクセント色の上の文字には使わない） */
-        --on-accent-light: #211f22; /* work/rest背景の上の文字（常に暗色） */
-        --on-accent-dark: #faf7f2;  /* danger背景の上の文字（常に明色） */
-        --control-overlay: rgba(20, 22, 20, 0.05);        /* 全画面ボタンの地色 */
-        --control-overlay-active: rgba(20, 22, 20, 0.1);
+        /* work/dangerの濃い背景には白文字、restの明るい黄色背景には
+           濃色文字、とコントラストを固定（--ink/--bgはテーマで変わる
+           ためアクセント色の上の文字には使わない） */
+        --text-on-dark-accent: #ffffff;  /* 青/赤背景の上の文字 */
+        --text-on-light-accent: #2b2b2b; /* 黄色背景の上の文字 */
+        --control-overlay: rgba(255, 255, 255, 0.75);        /* 全画面ボタンの地色 */
+        --control-overlay-active: rgba(255, 255, 255, 0.95);
 
-        /* --- タイポグラフィトークン ---
-           IBM Plexは生成ツールで多用されがちなので、Archivo + Chivo Monoに変更 */
+        /* --- タイポグラフィトークン --- */
         --font-sans: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         --font-mono: 'Chivo Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
       }
@@ -37,7 +36,7 @@
       * { box-sizing: border-box; }
       body {
         font-family: var(--font-sans);
-        background: var(--bg);
+        background: linear-gradient(135deg, #bfe0ff 0%, #e6f4ff 100%);
         margin: 0;
         min-height: 100vh;
         display: flex;
@@ -171,8 +170,8 @@
          （作業＝amber／休憩＝teal。文字を読まなくても一目で今の状態がわかる） */
       #displayWrap.phase-work #display { border-color: var(--work); }
       #displayWrap.phase-rest #display { border-color: var(--rest); }
-      #displayWrap.phase-work #cycleCount { background-color: var(--work); color: var(--on-accent-light); }
-      #displayWrap.phase-rest #cycleCount { background-color: var(--rest); color: var(--on-accent-light); }
+      #displayWrap.phase-work #cycleCount { background-color: var(--work); color: var(--text-on-dark-accent); }
+      #displayWrap.phase-rest #cycleCount { background-color: var(--rest); color: var(--text-on-light-accent); }
 
       /* 数字表示＋全画面ボタンをまとめる枠 */
       #displayWrap { position: relative; }
@@ -293,17 +292,17 @@
       }
       button .icon { flex-shrink: 0; display: block; }
 
-      /* 開始・再開系（作業フェーズと同じamber。濃色背景なので文字は暗色で） */
-      .btn-blue { background-color: var(--work); color: var(--on-accent-light); }
-      .btn-blue:active { background-color: #a62f58; }
+      /* 開始・再開系（青） */
+      .btn-blue { background-color: var(--work); color: var(--text-on-dark-accent); }
+      .btn-blue:active { background-color: #357ae8; }
 
-      /* 停止・リセット系 */
-      .btn-red { background-color: var(--danger); color: var(--on-accent-dark); }
-      .btn-red:active { background-color: #8a3636; }
+      /* 停止・リセット系（赤） */
+      .btn-red { background-color: var(--danger); color: var(--text-on-dark-accent); }
+      .btn-red:active { background-color: #c5221f; }
 
-      /* 一時停止系（控えめなニュートラル） */
-      .btn-yellow { background-color: var(--surface-border); color: var(--ink); }
-      .btn-yellow:active { background-color: #3a4b5c; }
+      /* 一時停止系（黄） */
+      .btn-yellow { background-color: var(--rest); color: var(--text-on-light-accent); }
+      .btn-yellow:active { background-color: #e0a800; }
 
       /* 一時停止ボタン専用（最初は非表示） */
       #pauseBtn { display: none; }
