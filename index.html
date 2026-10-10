@@ -9,16 +9,23 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
       :root {
-        color-scheme: dark;
-        /* --- カラートークン --- */
-        --bg: #121a24;          /* ベース背景（紺） */
-        --surface: #1a2531;     /* カード・入力欄の面 */
-        --surface-border: #2c3b4a; /* ヘアラインの境界線 */
-        --ink: #eaf1f6;         /* 主要テキスト */
-        --ink-dim: #7e93a3;     /* ラベル・補助テキスト */
+        color-scheme: light;
+        /* --- カラートークン（継続トーン・光） --- */
+        --bg: #eaf0f6;          /* ベース背景（淡い青グレー） */
+        --surface: #f8fafc;     /* カード・入力欄の面 */
+        --surface-border: #d7e1ea; /* ヘアラインの境界線／一時停止ボタン */
+        --ink: #1e2a36;         /* 主要テキスト */
+        --ink-dim: #4a6072;     /* ラベル・補助テキスト */
         --work: #e3922f;        /* 作業フェーズのアクセント（amber） */
         --rest: #45b5a6;        /* 休憩フェーズのアクセント（teal） */
         --danger: #c14b3d;      /* 停止・リセット */
+
+        /* 明るい背景色のamber/teal/dangerボタンの上でも読めるよう固定した文字色
+           （--ink/--bgはテーマで変わるため、アクセント色の上の文字には使わない） */
+        --on-accent-light: #1a2430; /* amber/teal背景の上の文字（常に暗色） */
+        --on-accent-dark: #fbf8f4;  /* danger背景の上の文字（常に明色） */
+        --control-overlay: rgba(15, 23, 31, 0.05);        /* 全画面ボタンの地色 */
+        --control-overlay-active: rgba(15, 23, 31, 0.1);
 
         /* --- タイポグラフィトークン --- */
         --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -162,8 +169,8 @@
          （作業＝amber／休憩＝teal。文字を読まなくても一目で今の状態がわかる） */
       #displayWrap.phase-work #display { border-color: var(--work); }
       #displayWrap.phase-rest #display { border-color: var(--rest); }
-      #displayWrap.phase-work #cycleCount { background-color: var(--work); color: var(--bg); }
-      #displayWrap.phase-rest #cycleCount { background-color: var(--rest); color: var(--bg); }
+      #displayWrap.phase-work #cycleCount { background-color: var(--work); color: var(--on-accent-light); }
+      #displayWrap.phase-rest #cycleCount { background-color: var(--rest); color: var(--on-accent-light); }
 
       /* 数字表示＋全画面ボタンをまとめる枠 */
       #displayWrap { position: relative; }
@@ -185,13 +192,13 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(255, 255, 255, 0.08);
+        background: var(--control-overlay);
         color: var(--ink-dim);
         border: 1px solid var(--surface-border);
         border-radius: 8px;
       }
       /* アイコンの出し分けはJS側でstyle.displayを直接制御する（SVGのhidden属性は環境により反映が不安定なため使わない） */
-      #fullscreenBtn:active { background: rgba(255, 255, 255, 0.16); }
+      #fullscreenBtn:active { background: var(--control-overlay-active); }
 
       /* --- 全画面表示中のスタイル（YouTube風にカウントダウン部分だけを画面いっぱいに） ---
          ブラウザ標準のFullscreen APIはiPhone(WebKit)では動作しないことがあるため、
@@ -210,7 +217,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--bg);
+        /* 全画面は明るいテーマを選んでいても常にダーク固定（暗い部屋での
+           視聴を想定した「集中モード」のため、カードのテーマとは独立させる） */
+        background: #0d1b2a;
         margin: 0;
         z-index: 999999;
       }
@@ -218,7 +227,7 @@
         font-size: 20vw;
         border: none;
         background: transparent;
-        color: var(--ink);
+        color: #eaf4ff;
         margin: 0;
         padding: 0;
       }
@@ -226,7 +235,7 @@
         top: 24px;
         right: 24px;
         background: rgba(255, 255, 255, 0.15);
-        color: var(--ink);
+        color: #eaf4ff;
         border-color: rgba(255, 255, 255, 0.4);
       }
 
@@ -260,7 +269,7 @@
         pointer-events: auto;
       }
       #displayWrap.fsActive #status {
-        color: var(--danger);
+        color: #ff8a80; /* 常にダークな全画面背景での視認性を優先した固定色 */
       }
 
       /* ボタン全般のスタイル（アイコンはテキストの左側に配置） */
@@ -283,11 +292,11 @@
       button .icon { flex-shrink: 0; display: block; }
 
       /* 開始・再開系（作業フェーズと同じamber。濃色背景なので文字は暗色で） */
-      .btn-blue { background-color: var(--work); color: var(--bg); }
+      .btn-blue { background-color: var(--work); color: var(--on-accent-light); }
       .btn-blue:active { background-color: #c77d24; }
 
       /* 停止・リセット系 */
-      .btn-red { background-color: var(--danger); }
+      .btn-red { background-color: var(--danger); color: var(--on-accent-dark); }
       .btn-red:active { background-color: #a53e32; }
 
       /* 一時停止系（控えめなニュートラル） */
